@@ -25,7 +25,7 @@ export default {
     },
     methods: {
       // 登录请求
-      handleLogin(){
+      async handleLogin(){
 
       
         // 前提:api-server-> node app.js
@@ -40,26 +40,52 @@ export default {
         // 需要使用ES7的新特性: async await
         // const res = this.$http.post();
         // console.log(res);
-        this.$http
-          .post(`login`, this.formdata)
-          .then(res => {
-            console.log(res);
-            const {
-              data: {
-                data,
-                meta: { msg, status }
-              }
-            } = res;
-            if (status===200) {
-              console.log('success----');
-            } else {
-              // 提示框 -> UI
-              this.$message.error(msg);
-            }
-          })
-          .catch(err => {
-            console.log(err);
-          });
+      const res = await this.$http.post(`login`, this.formdata);
+      console.log(res);
+      const {
+        data: {
+          data: { token },
+          meta: { msg, status }
+        }
+      } = res;
+      if (status === 200) {
+        //把正确的用户的token保存起来
+        localStorage.setItem('token',token);
+        // 取值
+        // const aa = localStorage.getItem("token");
+        // console.log(aa);
+        
+      // 渲染home.vue <- 改标识 <- js改标识
+        this.$router.push({
+          name: "home"
+        });
+      } else {
+        // 提示框 -> UI
+        this.$message.error(msg);
+      }
+      
+          // 处理异步操作的结果res
+          // .then(res => {
+          //   console.log(res);
+          //   const {
+          //     data: {
+          //       data,
+          //       meta: { msg, status }
+          //     }
+          //   } = res;
+          //   if (status === 200) {
+          //     // 渲染home.vue <- 改标识 <- js改标识
+          //     this.$router.push({
+          //       name: "home"
+          //     });
+          //   } else {
+          //     // 提示框 -> UI
+          //     this.$message.error(msg);
+          //   }
+          // })
+          // .catch(err => {
+          //   console.log(err);
+          // });
       }
     }
 };
