@@ -4,7 +4,6 @@ import Router from 'vue-router'
 // webpack -> @ -> src
 import Login from '@/components/login.vue'
 
-
 Vue.use(Router)
 
 export default new Router({
@@ -12,10 +11,10 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-    },{
-      name:'login',
-      path:'/login',
-      component:Login
+    }, {
+      name: 'login',
+      path: '/login',
+      component: Login
     }
   ]
 })
