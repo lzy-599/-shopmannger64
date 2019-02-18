@@ -140,11 +140,10 @@ export default {
   background-color: #b3c0d1;
 }
 .aside {
-  background-color: yellow;
 }
 
 .main {
-  background-color: green;
+  
 }
 .middle {
   line-height: 60px;
