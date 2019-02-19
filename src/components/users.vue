@@ -15,7 +15,7 @@
                     <el-button slot="append" icon="el-icon-search" @click="searchUser()"></el-button>
                 </el-input>
                 <!-- 添加按钮 -->
-                <el-button type="success" plain>添加用户</el-button>
+                <el-button type="success" plain @click="showDiaAddUser">添加用户</el-button>
             </el-col>
         </el-row>
 
@@ -68,17 +68,38 @@
         layout 附加功能
         total 一共数据的条数
      -->
-    <el-pagination
-        class="page"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="pagenum"
-        :page-sizes="[2, 4, 6, 8]"
-        :page-size="2"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"> 
-    </el-pagination>
-
+        <el-pagination
+            class="page"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="pagenum"
+            :page-sizes="[2, 4, 6, 8]"
+            :page-size="2"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="total"> 
+        </el-pagination>
+        <!-- 添加用户对话框 -->
+        <el-dialog title="添加用户" :visible.sync="dialogFormVisibleAdd">
+            <!-- 表单 -->
+            <el-form label-position="left" label-width="80px" :model="formdata">
+                <el-form-item label="用户名">
+                    <el-input v-model="formdata.username"></el-input>
+                </el-form-item>
+                <el-form-item label="密码">
+                    <el-input v-model="formdata.password"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱">
+                    <el-input v-model="formdata.email"></el-input>
+                </el-form-item>
+                <el-form-item label="电话">
+                    <el-input v-model="formdata.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisibleAdd = false">取 消</el-button>
+                <el-button type="primary" @click="dialogFormVisibleAdd = false">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-card>
 </template>
 
@@ -91,13 +112,26 @@
                 pagesize: 2,
                 total: -1,
                 // 表格数据
-                list: []
+                list: [],
+                // 对话框
+                dialogFormVisibleAdd: false,
+                // 表单数据 -> 发送post请求
+                formdata: {
+                    username: "",
+                    password: "",
+                    email: "",
+                    mobile: ""
+                }
             }
         },
         created(){
             this.getTableData()
         },
         methods: {
+            // 添加用户-打开对话框
+            showDiaAddUser(){
+                this.dialogFormVisibleAdd = true;
+            },
             // 清空时获取所有用户
             getAllUsers(){
                 this.getTableData();
