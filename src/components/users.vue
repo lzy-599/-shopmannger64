@@ -20,16 +20,16 @@
         </el-row>
 
     <!-- 表格 -->
-    <!--
-        id: 500
-        username: "admin"
-        email: "adsfad@qq.com"
-        mobile: "12345678"
-        create_time: 1486720211
-        mg_state: true
-        role_name: "主管"
-    -->
-        <el-table :data="list" style="width: 100%">
+        <el-table height="250px" :data="list" style="width: 100%">
+        <!--
+            id: 500
+            username: "admin"
+            email: "adsfad@qq.com"
+            mobile: "12345678"
+            create_time: 1486720211
+            mg_state: true
+            role_name: "主管"
+        -->
             <el-table-column prop="id" label="#" width="80"></el-table-column>
             <el-table-column prop="username" label="姓名" width="120"></el-table-column>
             <el-table-column prop="email" label="邮箱" width="140"></el-table-column>
@@ -60,7 +60,25 @@
             </el-table-column>
         </el-table>
 
-    <!-- 分页 -->
+    <!-- 分页
+        @size-change 每页条数改变时
+        @current-change 页码改变时（当前1页  点击2页）
+        current-page 当前显示第几页  页码
+        page-sizes 每页条数的不同情况的数组
+        layout 附加功能
+        total 一共数据的条数
+     -->
+    <el-pagination
+        class="page"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="pagenum"
+        :page-sizes="[2, 4, 6, 8]"
+        :page-size="2"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"> 
+    </el-pagination>
+
     </el-card>
 </template>
 
@@ -69,8 +87,9 @@
         data(){
             return {
                 query:"",
-                pagenum:1,
-                pagesize:10,
+                pagenum: 1,
+                pagesize: 2,
+                total: -1,
                 // 表格数据
                 list: []
             }
@@ -79,6 +98,18 @@
             this.getTableData()
         },
         methods: {
+            // 分页相关的方法
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+                this.pagenum = 1;
+                this.pagesize = val;
+                this.getTableData()
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+                this.pagenum = val;
+                this.getTableData()
+            },
             // 获取表格数据
             async getTableData(){
                 // 除了登录请求，其他所有请求都需要授权->
@@ -87,11 +118,14 @@
                 const AUTH_TOKEN = localStorage.getItem("token");
                 this.$http.defaults.headers.common['Authorization'] = AUTH_TOKEN;
 
-                const res = await this.$http.get(`users? query=${this.query} &pagenum=${this.pagenum} &pagesize=${this.pagesize}`)
+                const res = await this.$http.get(`users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${this.pagesize}`);
+                // console.log(res)
                 const {data,meta:{msg,status}} = res.data;
                 if (status === 200) {
                     this.list = data.users;
-                    console.log(this.list);
+                    this.total = data.total;
+                    // console.log(this.list);
+                    
                 }
             }
         }
@@ -107,5 +141,8 @@
     }
     .seartInput {
         width: 350px;
+    }
+    .page {
+        margin-top: 20px;
     }
 </style>
