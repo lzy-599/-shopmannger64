@@ -1,6 +1,6 @@
 <template>
     <el-card class="box">
-    <!-- 面包屑 -->
+    <!-- 面包屑 --> 
         <el-breadcrumb separator-class="el-icon-arrow-right">
             <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
             <el-breadcrumb-item>用户管理</el-breadcrumb-item>
@@ -11,8 +11,8 @@
         <el-row class="seartBox">
             <el-col>
                 <!-- 搜索框 -->
-                <el-input class="seartInput" placeholder="请输入内容" v-model="query">
-                    <el-button slot="append" icon="el-icon-search"></el-button>
+                <el-input @clear="getAllUsers()" clearable class="seartInput" placeholder="请输入内容" v-model="query">
+                    <el-button slot="append" icon="el-icon-search" @click="searchUser()"></el-button>
                 </el-input>
                 <!-- 添加按钮 -->
                 <el-button type="success" plain>添加用户</el-button>
@@ -98,6 +98,17 @@
             this.getTableData()
         },
         methods: {
+            // 清空时获取所有用户
+            getAllUsers(){
+                this.getTableData();
+            },
+            // 搜索用户
+            searchUser(){
+                // 按照query关键字搜索
+                // query=""
+                this.pagenum = 1;
+                this.getTableData()
+            },
             // 分页相关的方法
             handleSizeChange(val) {
                 console.log(`每页 ${val} 条`);
