@@ -15,7 +15,7 @@
                     <el-button slot="append" icon="el-icon-search" @click="searchUser()"></el-button>
                 </el-input>
                 <!-- 添加按钮 -->
-                <el-button type="success" plain @click="showDiaAddUser">添加用户</el-button>
+                <el-button type="success" plain @click="showDiaAddUser()">添加用户</el-button>
             </el-col>
         </el-row>
 
@@ -53,8 +53,8 @@
             </el-table-column>
             <el-table-column label="操作" width="200">
                 <template slot-scope="scope">
-                    <el-button type="primary" icon="el-icon-edit" circle size="mini" plain></el-button>
-                    <el-button type="danger" icon="el-icon-delete" circle size="mini" plain></el-button>
+                    <el-button @click="showDiaEditUser(scope.row)" type="primary" icon="el-icon-edit" circle size="mini" plain></el-button>
+                    <el-button @click="showMsgBoxDele(scope.row)" type="danger" icon="el-icon-delete" circle size="mini" plain></el-button>
                     <el-button type="success" icon="el-icon-check" circle size="mini" plain></el-button>
                 </template>
             </el-table-column>
@@ -68,6 +68,7 @@
         layout 附加功能
         total 一共数据的条数
      -->
+     
         <el-pagination
             class="page"
             @size-change="handleSizeChange"
@@ -97,7 +98,27 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisibleAdd = false">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisibleAdd = false">确 定</el-button>
+                <el-button type="primary" @click="addUser()">确 定</el-button>
+            </div>
+        </el-dialog>
+
+        <!-- 对话框-编辑用户对话框 -->
+        <el-dialog title="编辑用户" :visible.sync="dialogFormVisibleEdit">
+            <!-- 表单 -->
+            <el-form label-position="left" label-width="80px" :model="formdata">
+                <el-form-item label="用户名">
+                    <el-input disabled v-model="formdata.username"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱">
+                    <el-input v-model="formdata.email"></el-input>
+                </el-form-item>
+                <el-form-item label="电话">
+                    <el-input v-model="formdata.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisibleAdd = false">取 消</el-button>
+                <el-button type="primary" @click="editUser()">确 定</el-button>
             </div>
         </el-dialog>
     </el-card>
@@ -115,6 +136,7 @@
                 list: [],
                 // 对话框
                 dialogFormVisibleAdd: false,
+                dialogFormVisibleEdit: false,
                 // 表单数据 -> 发送post请求
                 formdata: {
                     username: "",
@@ -122,15 +144,75 @@
                     email: "",
                     mobile: ""
                 }
-            }
+            };
         },
         created(){
             this.getTableData()
         },
         methods: {
+            // 编辑 - 发送请求
+            async editUser() {
+                // id -> user.id -> user -> 1data(没有)  2方法实参(没有)
+                // this.formdata上一步已经是user
+                const res = await this.$http.put(`users/${this.formdata.id}`,this.formdata);
+                console.log(res);
+                const{
+                    meta: {msg, status}
+                    } = res.data;
+                    if (status === 200) {
+                        // 关闭表格
+                        this.dialogFormVisibleEdit = false;
+                        // 更新表格
+                        this.getTableData();
+                    }
+            },
+            // 编辑 - 展示对话框
+            showDiaEditUser(user){
+                // 获取当前用户的数据 <- 
+                this.formdata = user;
+                this.dialogFormVisibleEdit = true;
+            },
+            // 删除 - 展示确认框
+            showMsgBoxDele(user){
+                // console.log(user);
+                this.$confirm('是否删除用户?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(async () => {
+                    // id -> 用户id数据 -> user.id
+                    const res = await this.$http.delete(`users/${user.id}`);
+                    // console.log(res);
+                    const {
+                        meta: { msg, status }
+                    } = res.data;
+                    if (status === 200) {
+                        this.$message.success(msg);
+                        this.pagenum = 1;
+                        this.getTableData();
+                    }
+                    this.$message.success("删除成功");
+                }).catch(() => {
+                    this.$message.info("已取消删除");
+                    });
+            },
+            // 添加 -   发送请求
+            async addUser(){
+            // 发送请求
+                const res = await this.$http.post(`users`,this.formdata);
+                console.log(res);
+                const {meta:{msg,status}} = res.data;
+                if(status === 201) {
+                //     关闭对话框
+                this.dialogFormVisibleAdd = false;
+                // 更新表格
+                this.getTableData();
+                }
+            },
             // 添加用户-打开对话框
             showDiaAddUser(){
                 this.dialogFormVisibleAdd = true;
+                this.formdata = {};
             },
             // 清空时获取所有用户
             getAllUsers(){
@@ -170,7 +252,6 @@
                     this.list = data.users;
                     this.total = data.total;
                     // console.log(this.list);
-                    
                 }
             }
         }
