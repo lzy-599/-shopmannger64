@@ -55,6 +55,28 @@
                 </template>
             </el-table-column>
         </el-table>
+        <!-- 对话框 -->
+        <el-dialog title="分配权限" :visible.sync="dialogFormVisible">
+            <!-- 
+                data：数据源
+                node-key：每个节点唯一标识
+                default-checked-keys：默认选中
+                default-expanded-keys：默认展开
+                props 配置选项
+             -->
+            <el-tree
+                :data="treelist"
+                show-checkbox
+                node-key="id"
+                default-expand-all
+                :default-checked-keys="arrCheck"
+                :props="defaultProps">
+            </el-tree>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-card>
 </template>
 
@@ -62,8 +84,16 @@
 export default {
     data(){
         return{
-            roles:[]
-        }
+            roles:[],
+            dialogFormVisible: false,
+            // 树形结构相关数据
+            treelist:[],
+            arrCheck:[],
+            defaultProps:{
+                label:"authName",
+                children:"children"
+            }
+        };
     },
     created(){
         this.getRoles()
@@ -89,8 +119,34 @@ export default {
                 role.children = data;
             }
         },
-        showDiaSetRights(){
-
+        // 分配权限中的打开对话框
+        async showDiaSetRights(role){
+            const res = await this.$http.get(`rights/tree`);
+            // console.log(res);
+            const {
+                meta:{msg, status},
+                data
+            } = res.data;
+            if(status === 200){
+                this.treelist = data;
+                // console.log(this.treelist);
+               
+                // 获取当前角色的权限id <- 角色
+                console.log(role);
+                const temp2 = [];
+                this.treelist.forEach(item1 => {
+                    // temp2.push(item1.id);
+                    item1.children.forEach(item2 => {
+                        // temp2.push(item2.id);
+                        item2.children.forEach(item3 => {
+                            temp2.push(item3.id);
+                        });
+                    });
+                });
+                // console.log(temp2);
+                this.arrCheck = temp2;
+            }
+            this.dialogFormVisible = true;
         },
         // 获取权限
         async getRoles(){
