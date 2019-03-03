@@ -65,6 +65,7 @@
                 props 配置选项
              -->
             <el-tree
+                ref="treeDom"
                 :data="treelist"
                 show-checkbox
                 node-key="id"
@@ -74,7 +75,7 @@
             </el-tree>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+                <el-button type="primary" @click="setRights()">确 定</el-button>
             </div>
         </el-dialog>
     </el-card>
@@ -92,13 +93,45 @@ export default {
             defaultProps:{
                 label:"authName",
                 children:"children"
-            }
+            },
+            currRoleId: -1
         };
     },
     created(){
         this.getRoles()
     },
     methods:{
+        // 分配权限-发送请求
+        async setRights(){ 
+            // el-tree组件中是否提供属性或者方法来获取两类节点
+            // 获取全选节点id -> getCheckeys
+            const arr1 = this.$refs.treeDom.getCheckedKeys();
+            // console.log(arr1);
+
+
+            // 获取半选节点id -> getHalfCheckedKeys
+            const arr2 = this.$refs.treeDom.getHalfCheckedKeys();
+            // console.log(arr2);
+
+            // ES6 展开操作运算符
+            const arr = [...arr1,...arr2];
+            // console.log(arr);
+            // roleID角色
+            // 数组方法  json 分割数组
+            const res = await this.$http.post(`roles/${this.currRoleId}/rights`,{
+                rids:arr.join(",")
+            });
+            console.log(res);
+            const {
+                meta:{msg, status},
+                data
+            } = res.data;
+            if(status === 200){
+                // 关闭对话框
+                this.dialogFormVisible = false;
+                this.getRoles();
+            }
+        },
         // 取消权限
         async deleRights(role,rights){
             // console.log(role,rights)
@@ -121,6 +154,7 @@ export default {
         },
         // 分配权限中的打开对话框
         async showDiaSetRights(role){
+            this.currRoleId = role.id;
             const res = await this.$http.get(`rights/tree`);
             // console.log(res);
             const {
