@@ -54,12 +54,7 @@ export default {
   // 页面加载之前
   // Complexity is Everything is cool!
   beforeMount() {
-    if (!localStorage.getItem("token")) {
-      this.$router.push({
-        name: "login"
-      });
-      this.$message.warning("请先登录！");
-    }
+    // 放在路由守卫里
   },
   mounted() {},
   created() {
